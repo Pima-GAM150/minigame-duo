@@ -30,7 +30,7 @@ public class SceneLoader : MonoBehaviour
     /// <summary>
     /// Starts the transition to the next Scene.
     /// </summary>
-    public void StartTrannsition()
+    public void StartTransition()
     {
         if (SceneManager.GetActiveScene() == _inactiveNextScene)
         {
@@ -59,19 +59,19 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     private void LoadNextScene()
     {
-        var cachedScene = GetNextScene();
+        var nextSceneName = GetNextScene();
 
-        var async = SceneManager.LoadSceneAsync(_transitionScene.name, LoadSceneMode.Additive);
+        var async = SceneManager.LoadSceneAsync(TransitionSceneName, LoadSceneMode.Additive);
         async.allowSceneActivation = false;
-        async = SceneManager.LoadSceneAsync(cachedScene.name, LoadSceneMode.Additive);
+        async = SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Additive);
         async.allowSceneActivation = false;
     }
 
     /// <summary>
-    /// returns a random scene to use next.
+    /// returns a random scene name to use next.
     /// </summary>
-    /// <returns>Scene</returns>
-    private Scene GetNextScene()
+    /// <returns>string</returns>
+    private string GetNextScene()
     {
         var scount = SceneManager.sceneCountInBuildSettings;
 
@@ -79,11 +79,12 @@ public class SceneLoader : MonoBehaviour
         {
             throw new UnassignedReferenceException("Not enough Scenes in build settings!");
         }
-        var scene = SceneManager.GetSceneByBuildIndex(Random.Range(0, scount - 1));
+        var scene = _scenesInBuild[Random.Range(0, _scenesInBuild.Count - 1)];
 
-        if (SceneNamesToIgnore.Contains(scene.name) || _lastScene == scene)
+        if (_lastScene.name == scene)
             return GetNextScene();
-        else return scene;
+
+        return scene;
     }
 
     /// <summary>
@@ -112,13 +113,6 @@ public class SceneLoader : MonoBehaviour
             return;
         }
 
-        _transitionScene = SceneManager.GetSceneByName(TransitionSceneName);
-        if (!_transitionScene.IsValid())
-        {
-            Debug.LogError("_transitionScene is not valid!");
-            return;
-        }
-
         SceneManager.activeSceneChanged += Event_ActiveSceneChanged;
         SceneManager.sceneLoaded += Event_SceneLoaded;
         SceneManager.sceneUnloaded += Event_SceneUnloaded;
@@ -127,22 +121,28 @@ public class SceneLoader : MonoBehaviour
 
     private void GetValidSceneNames()
     {
-        for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
         {
-            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
 
-            int lastSlash = scenePath.LastIndexOf("/");
-            _scenesInBuild.Add(scenePath.Substring(lastSlash + 1, scenePath.LastIndexOf(".") - lastSlash - 1));
+            var sceneName = path.Substring(0, path.Length - 6).Substring(path.LastIndexOf('/') + 1);
+
+            if (SceneNamesToIgnore.Contains(sceneName))
+                continue;
+
+            _scenesInBuild.Add(sceneName);
         }
     }
 
     private void Event_SceneUnloaded(Scene scene)
     {
+        Debug.Log($"Unloaded scene: {scene.name}");
         _lastScene = scene;
     }
 
     private void Event_SceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        Debug.Log($"Completed Scene Load on {scene.name}");
         if (mode == LoadSceneMode.Single)
         {
             Debug.Log("Scene loaded using LoadSceneMode.single");
@@ -158,6 +158,7 @@ public class SceneLoader : MonoBehaviour
 
     private void Event_ActiveSceneChanged(Scene oldScene, Scene newScene)
     {
+        Debug.Log($"Switching to next active scene: {newScene.name}");
         SceneManager.UnloadSceneAsync(oldScene);
         LoadNextScene();
     }
