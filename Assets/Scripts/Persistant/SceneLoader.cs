@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#pragma warning disable RECS0062 // Warns when a culture-aware 'LastIndexOf' call is used by default.
+
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,13 +12,12 @@ public class SceneLoader : MonoBehaviour
     public List<string> SceneNamesToIgnore;
     public string TransitionSceneName;
 
-    private List<Scene> _scenesToIgnore;
-
     private Scene _transitionScene;
 
     private Scene _inactiveNextScene;
     private Scene _lastScene;
     private bool _waitingToPopScene;
+    private List<string> _scenesInBuild = new List<string>();
 
     /// <summary>
     /// Activates the next Scene.
@@ -74,13 +75,13 @@ public class SceneLoader : MonoBehaviour
     {
         var scount = SceneManager.sceneCountInBuildSettings;
 
-        if (scount <= 1 || scount <= _scenesToIgnore.Count)
+        if (scount <= 1 || scount <= SceneNamesToIgnore.Count)
         {
             throw new UnassignedReferenceException("Not enough Scenes in build settings!");
         }
         var scene = SceneManager.GetSceneByBuildIndex(Random.Range(0, scount - 1));
 
-        if (_scenesToIgnore.Contains(scene) || _lastScene == scene)
+        if (SceneNamesToIgnore.Contains(scene.name) || _lastScene == scene)
             return GetNextScene();
         else return scene;
     }
@@ -103,18 +104,11 @@ public class SceneLoader : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        foreach (string sceneName in SceneNamesToIgnore)
-        {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            if (scene.IsValid())
-                _scenesToIgnore.Add(scene);
-            else
-                Debug.LogError($"{sceneName} in SceneNamesToIgnore is not a valid scene!");
-        }
+        GetValidSceneNames();
 
-        if (!_scenesToIgnore.Any())
+        if (!SceneNamesToIgnore.Any())
         {
-            Debug.LogError("_scenesToIgnore is empty!");
+            Debug.LogError("SceneNamesToIgnore is empty!");
             return;
         }
 
@@ -129,6 +123,17 @@ public class SceneLoader : MonoBehaviour
         SceneManager.sceneLoaded += Event_SceneLoaded;
         SceneManager.sceneUnloaded += Event_SceneUnloaded;
         GetNextScene();
+    }
+
+    private void GetValidSceneNames()
+    {
+        for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+
+            int lastSlash = scenePath.LastIndexOf("/");
+            _scenesInBuild.Add(scenePath.Substring(lastSlash + 1, scenePath.LastIndexOf(".") - lastSlash - 1));
+        }
     }
 
     private void Event_SceneUnloaded(Scene scene)
