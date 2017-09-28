@@ -5,6 +5,7 @@ using UnityEngine;
 public class RotateObject : MonoBehaviour {
 
     public float rotationTime = 2f;
+    public float tilt = 7f; //needs to be positive
 
     private float rotationTimeLeft = 0f;
     private Quaternion target = Quaternion.Euler(0f, 0f, 0f);
@@ -15,7 +16,7 @@ public class RotateObject : MonoBehaviour {
 
         if(rotationTimeLeft > rotationTime)
         {
-            float zTilt = Random.Range(-7.0f, 7.0f);
+            float zTilt = Random.Range(-tilt, tilt);
             target = Quaternion.Euler(0f, 0f, zTilt);
             rotationTimeLeft = 0f;
             

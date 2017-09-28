@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class Accelerometer : MonoBehaviour {
 
     public Rigidbody rb;
-    public float speed = 1;
+    public float maxMagnitude = 5f;
+    public float speed = 1f;
     public Text text;
 
 	// Use this for initialization
@@ -18,16 +19,20 @@ public class Accelerometer : MonoBehaviour {
 	// Update is called once per frame
     void FixedUpdate()
     {
-        text.text = (Input.acceleration.x).ToString() + ", " + gameObject.transform.position;
+        text.text = (Input.acceleration.x).ToString();
         Vector3 dir = Vector3.zero;
-        dir.x = Input.acceleration.x;
-        //dir.y = Input.acceleration.y;
-        if (dir.sqrMagnitude > 1)
-            dir.Normalize();
 
-        dir *= Time.deltaTime;
-        //rb.AddForce(dir, ForceMode.Acceleration);
-        transform.position += dir;
+        if(Mathf.Abs(Input.acceleration.x) > 0.1)
+        {
+            dir.x = Input.acceleration.x;
+            //dir.y = Input.acceleration.y;
+            if (dir.sqrMagnitude > maxMagnitude)
+                dir.Normalize();
+
+            dir *= Time.deltaTime * speed;
+        }
+        rb.AddForce(dir, ForceMode.Impulse);
+        //transform.position += dir;
         //transform.Translate(dir * speed);
     }
 }
