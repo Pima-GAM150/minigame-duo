@@ -5,6 +5,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(DontDestroyThisOnLoad))]
+[RequireComponent(typeof(GameController))]
 public class SceneLoader : MonoBehaviour
 {
     public static SceneLoader ActiveLoader;
@@ -54,6 +56,39 @@ public class SceneLoader : MonoBehaviour
         SceneManager.SetActiveScene(_transitionScene);
     }
 
+    public void Awake()
+    {
+        if (ActiveLoader == null)
+        {
+            ActiveLoader = this;
+        }
+        else
+        {
+            Debug.Log($"Destroying SceneLoader on {name}.");
+            Destroy(this);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Default Unity Method
+    /// </summary>
+    public void Start()
+    {
+        GetValidSceneNames();
+
+        if (!SceneNamesToIgnore.Any())
+        {
+            Debug.LogError("SceneNamesToIgnore is empty!");
+            return;
+        }
+
+        SceneManager.activeSceneChanged += Event_ActiveSceneChanged;
+        SceneManager.sceneLoaded += Event_SceneLoaded;
+        SceneManager.sceneUnloaded += Event_SceneUnloaded;
+        GetNextScene();
+    }
+
     /// <summary>
     /// loads the next scene and the coresponding transition scene in the background.
     /// </summary>
@@ -85,38 +120,6 @@ public class SceneLoader : MonoBehaviour
             return GetNextScene();
 
         return scene;
-    }
-
-    /// <summary>
-    /// Default Unity Method
-    /// </summary>
-    public void Start()
-    {
-        if (ActiveLoader == null)
-        {
-            ActiveLoader = this;
-        }
-        else
-        {
-            Debug.Log($"Destroying SceneLoader on {name}.");
-            Destroy(this);
-            return;
-        }
-
-        DontDestroyOnLoad(gameObject);
-
-        GetValidSceneNames();
-
-        if (!SceneNamesToIgnore.Any())
-        {
-            Debug.LogError("SceneNamesToIgnore is empty!");
-            return;
-        }
-
-        SceneManager.activeSceneChanged += Event_ActiveSceneChanged;
-        SceneManager.sceneLoaded += Event_SceneLoaded;
-        SceneManager.sceneUnloaded += Event_SceneUnloaded;
-        GetNextScene();
     }
 
     private void GetValidSceneNames()
