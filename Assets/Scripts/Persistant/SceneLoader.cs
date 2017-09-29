@@ -1,5 +1,7 @@
 ﻿#pragma warning disable RECS0062 // Warns when a culture-aware 'LastIndexOf' call is used by default.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -86,13 +88,13 @@ public class SceneLoader : MonoBehaviour
         SceneManager.activeSceneChanged += Event_ActiveSceneChanged;
         SceneManager.sceneLoaded += Event_SceneLoaded;
         SceneManager.sceneUnloaded += Event_SceneUnloaded;
-        GetNextScene();
+        PrepareNextScene();
     }
 
     /// <summary>
     /// loads the next scene and the coresponding transition scene in the background.
     /// </summary>
-    private void LoadNextScene()
+    private void PrepareNextScene()
     {
         var nextSceneName = GetNextScene();
 
@@ -114,7 +116,7 @@ public class SceneLoader : MonoBehaviour
         {
             throw new UnassignedReferenceException("Not enough Scenes in build settings!");
         }
-        var scene = _scenesInBuild[Random.Range(0, _scenesInBuild.Count - 1)];
+        var scene = _scenesInBuild[UnityEngine.Random.Range(0, _scenesInBuild.Count - 1)];
 
         if (_lastScene.name == scene)
             return GetNextScene();
@@ -146,6 +148,7 @@ public class SceneLoader : MonoBehaviour
     private void Event_SceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"Completed Scene Load on {scene.name}");
+        _waitingToPopScene = true;
         if (mode == LoadSceneMode.Single)
         {
             Debug.Log("Scene loaded using LoadSceneMode.single");
@@ -153,7 +156,6 @@ public class SceneLoader : MonoBehaviour
         }
         if (scene != _transitionScene)
         {
-            _waitingToPopScene = true;
             _inactiveNextScene = scene;
         }
         else _transitionScene = scene;
@@ -163,6 +165,6 @@ public class SceneLoader : MonoBehaviour
     {
         Debug.Log($"Switching to next active scene: {newScene.name}");
         SceneManager.UnloadSceneAsync(oldScene);
-        LoadNextScene();
+        PrepareNextScene();
     }
 }
