@@ -7,9 +7,19 @@ using UnityEngine;
 [RequireComponent(typeof(SceneLoader))]
 public class GameController : MonoBehaviour
 {
-    public delegate void TimerTick(float value);
+    public delegate void TimerTick(float current, float max);
 
     public event TimerTick OnGameTimerTick;
+
+    public event TimerTick OnTransitionTimerTick;
+
+    public event EventHandler OnTransitionStart;
+
+    public event EventHandler OnTransitionEnd;
+
+    public event EventHandler OnGameStart;
+
+    public event EventHandler OnGameEnd;
 
     public static GameController ActiveController;
 
@@ -31,8 +41,8 @@ public class GameController : MonoBehaviour
 
     public void StartGame()
     {
-        _transitionTime = TransitionTime;
-        _gameTime = GameTime;
+        TransitionTime = _transitionTime;
+        GameTime = _gameTime;
         StartCoroutine(LoadNextGame());
     }
 
@@ -41,6 +51,8 @@ public class GameController : MonoBehaviour
         if (ActiveController == null)
         {
             ActiveController = this;
+            _transitionTime = TransitionTime;
+            _gameTime = GameTime;
         }
         else
         {
@@ -52,21 +64,37 @@ public class GameController : MonoBehaviour
 
     private IEnumerator LoadNextGame()
     {
-        do
+        do // while WasSuccessful
         {
+            WasSuccessful = false;
             var sloader = SceneLoader.ActiveLoader;
             sloader.StartTransition();
             var counter = 0f;
 
+            // wait for transition
+            OnTransitionStart?.Invoke(this, EventArgs.Empty);
+            while (counter <= TransitionTime)
+            {
+                counter += Time.deltaTime;
+                OnTransitionTimerTick?.Invoke(counter, TransitionTime);
+                yield return null;
+            }
+            OnTransitionEnd?.Invoke(this, EventArgs.Empty);
+
+            counter = 0f;
+            sloader.ActivateNextScene();
+
             // wait for game timer
+            OnGameStart?.Invoke(this, EventArgs.Empty);
             while (counter <= GameTime)
             {
                 counter += Time.deltaTime;
-                OnGameTimerTick?.Invoke(counter);
+                OnGameTimerTick?.Invoke(counter, GameTime);
                 yield return null;
             }
             TransitionTime = Mathf.Clamp(TransitionTime, MinimumTransitionTime, TransitionTime);
             GameTime = Mathf.Clamp(GameTime, MinimumGameTime, GameTime);
+            OnGameEnd?.Invoke(this, EventArgs.Empty);
         }
         while (WasSuccessful);
 
