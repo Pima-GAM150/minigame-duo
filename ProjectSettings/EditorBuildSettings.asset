@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Games/FlySwat.unity
+    guid: 4de8b01717691c54ca332a69f7996f7b
+  - enabled: 0
     path: Assets/Scenes/Games/CatchBall.unity
     guid: 9c591e442327340498288f354a7dddc8
   - enabled: 0
