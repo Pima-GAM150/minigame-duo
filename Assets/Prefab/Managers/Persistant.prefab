@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4561436718666468}
   - component: {fileID: 114392561658337332}
   - component: {fileID: 114009995989165980}
+  - component: {fileID: 114712163060403438}
   m_Layer: 0
   m_Name: Persistant
   m_TagString: Untagged
@@ -53,7 +54,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TransitionTime: 5
+  MinimumTransitionTime: 0.5
   GameTime: 10
+  MinimumGameTime: 2
+  WasSuccessful: 0
 --- !u!114 &114392561658337332
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -67,4 +71,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SceneNamesToIgnore:
   - MainMenu
+  - Transition
   TransitionSceneName: Transition
+--- !u!114 &114712163060403438
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1845077813040638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa2b8b01efa3b3043a8c122a63b4f9c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
