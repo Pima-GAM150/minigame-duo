@@ -12,28 +12,56 @@ public class CreateObjects : MonoBehaviour {
     private int rmdPref;
     private float width;
     private float height;
+    private int totalSpawned = 0;
+    private int catchObject = 0;
 
 
 	// Use this for initialization
 	void Start () {
         height = Camera.main.orthographicSize;
         width = height * Camera.main.aspect;
+
+        catchObject = Random.Range(0, prefabs.Count);
+
         InstaniateObjects();
+        
 	}
 	
 	// Update is called once per frame
 	void Update () {
         //Debug.Log(width + ", " + height);
+        timer += Time.deltaTime;
+        if(timer > timeBetweenSpawn & totalSpawned < totalObjects)
+        {
+            InstaniateObjects();
+            timer = 0;
+            totalSpawned++;
+        }
 	}
 
     public void InstaniateObjects()
     {
+        Material newMaterial = new Material(Shader.Find("Diffuse"));
+
         Vector3 rmdPosition = new Vector3(Random.Range(-width, width), height*2, 0f);
 
-        GameObject newObject = (GameObject) Instantiate(prefabs[0], rmdPosition, Quaternion.identity);
+        int rmdInt = Random.Range(0, prefabs.Count);
+        GameObject newObject = (GameObject) Instantiate(prefabs[rmdInt], rmdPosition, Quaternion.identity);
+
+        if (rmdInt == catchObject)
+        {
+            newMaterial.color = Color.blue;
+            newObject.name = "Blue";
+        }
+        else
+        {
+            newMaterial.color = Color.red;
+            newObject.name = "Red";
+        }
 
         //Changing the drag determines how fast the object will fall.
         newObject.GetComponent<Rigidbody>().drag = Random.Range(1.5f, 2.5f);
+        newObject.GetComponent<MeshRenderer>().material = newMaterial;
 
     }
 }
