@@ -25,12 +25,12 @@ public class CatchBallManager : MonoBehaviour {
 
     public void CalculateCaughtPercentage(int caughtObjects, int totalObjects)
     {
-        if((float)caughtObjects/ (float)totalObjects > 0.5f && !caughtWrongObject)
+        if((float)caughtObjects/ (float)totalObjects < 0.5f && !caughtWrongObject)
         {
-            gameOver = false;
+            GameController.ActiveController.WasSuccessful = false;
         } else
         {
-            gameOver = true;
+            GameController.ActiveController.WasSuccessful = true;
         }
     }
 
@@ -38,7 +38,7 @@ public class CatchBallManager : MonoBehaviour {
     {
         if(collider.name.Contains("Red"))
         {
-            gameOver = true;
+            GameController.ActiveController.WasSuccessful = true;
             caughtWrongObject = true;
         }
         if(collider.name.Contains("Blue"))

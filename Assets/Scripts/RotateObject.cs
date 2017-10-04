@@ -10,8 +10,14 @@ public class RotateObject : MonoBehaviour {
     private float rotationTimeLeft = 0f;
     private Quaternion target = Quaternion.Euler(0f, 0f, 0f);
 
+    void Start()
+    {
+
+    }
+
     // Update is called once per frame
     void Update () {
+        
         rotationTimeLeft += Time.deltaTime;
 
         if(rotationTimeLeft > rotationTime)
