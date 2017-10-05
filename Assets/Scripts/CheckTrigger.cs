@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class CheckTrigger : MonoBehaviour {
 
-    public bool gameOver = false;
-
 	// Use this for initialization
 	void Start () {
-		
-	}
+        GameController.ActiveController.WasSuccessful = true;
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -20,7 +18,7 @@ public class CheckTrigger : MonoBehaviour {
     {
         if(collider.name == "GameOver")
         {
-            gameOver = true;
+            GameController.ActiveController.WasSuccessful = false;
         }
     }
 }
