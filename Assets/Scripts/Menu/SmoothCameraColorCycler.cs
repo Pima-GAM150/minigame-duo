@@ -7,9 +7,11 @@ public class SmoothCameraColorCycler : MonoBehaviour
 {
     public bool Enabled = true;
 
+    public float InterpSpeed = 6f;
+
     [Space(10)]
     private Color _currentColor;
-    public float InterpSpeed = 6f;
+
     private Camera _cam;
     private float _hue;
     private float _sat;
@@ -21,6 +23,7 @@ public class SmoothCameraColorCycler : MonoBehaviour
 
         Color.RGBToHSV(_cam.backgroundColor, out _hue, out _sat, out _val);
     }
+
     public void Update()
     {
         if (Enabled && _cam)
