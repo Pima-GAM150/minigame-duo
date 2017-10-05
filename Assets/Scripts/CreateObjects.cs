@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CreateObjects : MonoBehaviour {
-
+public class CreateObjects : MonoBehaviour
+{
     public List<GameObject> prefabs;
     public float timeBetweenSpawn = 2f;
     public int totalObjects = 3;
@@ -15,38 +15,14 @@ public class CreateObjects : MonoBehaviour {
     private int totalSpawned = 0;
     private int catchObject = 0;
 
-
-	// Use this for initialization
-	void Start () {
-        height = Camera.main.orthographicSize;
-        width = height * Camera.main.aspect;
-
-        catchObject = Random.Range(0, prefabs.Count);
-
-        InstaniateObjects();
-        
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        //Debug.Log(width + ", " + height);
-        timer += Time.deltaTime;
-        if(timer > timeBetweenSpawn & totalSpawned < totalObjects)
-        {
-            InstaniateObjects();
-            timer = 0;
-            totalSpawned++;
-        }
-	}
-
     public void InstaniateObjects()
     {
         Material newMaterial = new Material(Shader.Find("Diffuse"));
 
-        Vector3 rmdPosition = new Vector3(Random.Range(-width, width), height*2, 0f);
+        Vector3 rmdPosition = new Vector3(Random.Range(-width, width), height * 2, 0f);
 
         int rmdInt = Random.Range(0, prefabs.Count);
-        GameObject newObject = (GameObject) Instantiate(prefabs[rmdInt], rmdPosition, Quaternion.identity);
+        GameObject newObject = (GameObject)Instantiate(prefabs[rmdInt], rmdPosition, Quaternion.identity);
 
         if (rmdInt == catchObject)
         {
@@ -62,6 +38,29 @@ public class CreateObjects : MonoBehaviour {
         //Changing the drag determines how fast the object will fall.
         newObject.GetComponent<Rigidbody>().drag = Random.Range(1.5f, 2.5f);
         newObject.GetComponent<MeshRenderer>().material = newMaterial;
+    }
 
+    // Use this for initialization
+    private void Start()
+    {
+        height = Camera.main.orthographicSize;
+        width = height * Camera.main.aspect;
+
+        catchObject = Random.Range(0, prefabs.Count);
+
+        InstaniateObjects();
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        //Debug.Log(width + ", " + height);
+        timer += Time.deltaTime;
+        if (timer > timeBetweenSpawn & totalSpawned < totalObjects)
+        {
+            InstaniateObjects();
+            timer = 0;
+            totalSpawned++;
+        }
     }
 }

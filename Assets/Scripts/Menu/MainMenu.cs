@@ -19,23 +19,6 @@ public class MainMenu : MonoBehaviour
             Destroy(this);
     }
 
-    public void Start()
-    {
-        var gc = GameController.ActiveController;
-        gc.OnTransitionStart += (s, e) => { StartCoroutine(CloseDoors()); };
-        gc.OnTransitionEnd += (s, e) => { StartCoroutine(OpenDoors()); };
-    }
-
-    public IEnumerator CloseDoors()
-    {
-        yield return null;
-    }
-
-    public IEnumerator OpenDoors()
-    {
-        yield return null;
-    }
-
     public void StartClicked()
     {
         GameController.ActiveController.StartGame();

@@ -11,14 +11,18 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(GameController))]
 public class SceneLoader : MonoBehaviour
 {
+    public delegate void AsyncSceneReadyHandler(AsyncOperation transition, AsyncOperation nextScene);
+
+    public event AsyncSceneReadyHandler OnSceneReady;
+
     public static SceneLoader ActiveLoader;
 
     public List<string> SceneNamesToIgnore;
     public string TransitionSceneName;
 
-    private Scene _transitionScene;
+    private AsyncOperation _transitionScene;
+    private AsyncOperation _inactiveNextScene;
 
-    private Scene _inactiveNextScene;
     private Scene _lastScene;
     private bool _waitingToPopScene;
     private List<string> _scenesInBuild = new List<string>();
@@ -28,7 +32,8 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     public void ActivateNextScene()
     {
-        SceneManager.SetActiveScene(_inactiveNextScene);
+        _inactiveNextScene.allowSceneActivation = true;
+        SceneManager.SetActiveScene(SceneManager.GetSceneAt(1)); // set the next scene in the list to be active
     }
 
     /// <summary>
@@ -36,17 +41,6 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     public void StartTransition()
     {
-        if (SceneManager.GetActiveScene() == _inactiveNextScene)
-        {
-            Debug.LogWarning($"StartTransition() called while _inactiveNextScene is the active scene! This probably isn't intentional!");
-        }
-
-        if (SceneManager.GetActiveScene() == _transitionScene)
-        {
-            Debug.LogError("TransitionNextScene() called while TransitionScene already active!");
-            return;
-        }
-
         if (!_waitingToPopScene)
         {
             Debug.LogError("TransitionNextScene() called before next scene was loaded! (_waitingToPopScene = false)");
@@ -55,7 +49,8 @@ public class SceneLoader : MonoBehaviour
 
         _waitingToPopScene = false;
 
-        SceneManager.SetActiveScene(_transitionScene);
+        _transitionScene.allowSceneActivation = true;
+        SceneManager.SetActiveScene(SceneManager.GetSceneAt(1)); // set the next scene in the list to be active
     }
 
     public void Awake()
@@ -86,22 +81,34 @@ public class SceneLoader : MonoBehaviour
         }
 
         SceneManager.activeSceneChanged += Event_ActiveSceneChanged;
-        SceneManager.sceneLoaded += Event_SceneLoaded;
         SceneManager.sceneUnloaded += Event_SceneUnloaded;
-        PrepareNextScene();
+        OnSceneReady += Event_SceneReady;
+        StartCoroutine(PrepareNextScene());
     }
 
     /// <summary>
     /// loads the next scene and the coresponding transition scene in the background.
     /// </summary>
-    private void PrepareNextScene()
+    private IEnumerator PrepareNextScene()
     {
         var nextSceneName = GetNextScene();
 
-        var async = SceneManager.LoadSceneAsync(TransitionSceneName, LoadSceneMode.Additive);
-        async.allowSceneActivation = false;
-        async = SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Additive);
-        async.allowSceneActivation = false;
+        var transitionAsync = SceneManager.LoadSceneAsync(TransitionSceneName, LoadSceneMode.Additive);
+        transitionAsync.allowSceneActivation = false;
+        do
+        {
+            yield return null;
+        } while (transitionAsync.progress < .89f); // magical number where scenes aren't fully loaded until they're active.
+        Debug.Log($"Loaded {TransitionSceneName}");
+        var nextSceneAsync = SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Additive);
+        nextSceneAsync.allowSceneActivation = false;
+        do
+        {
+            yield return null;
+        } while (nextSceneAsync.progress < .89f);
+        Debug.Log($"Loaded {nextSceneName}");
+        // unity should get their shit together why is there even an "on scene loaded" event if its 100% identical to on scene active?
+        OnSceneReady?.Invoke(transitionAsync, nextSceneAsync);
     }
 
     /// <summary>
@@ -145,26 +152,18 @@ public class SceneLoader : MonoBehaviour
         _lastScene = scene;
     }
 
-    private void Event_SceneLoaded(Scene scene, LoadSceneMode mode)
+    private void Event_SceneReady(AsyncOperation transition, AsyncOperation nextScene)
     {
-        Debug.Log($"Completed Scene Load on {scene.name}");
         _waitingToPopScene = true;
-        if (mode == LoadSceneMode.Single)
-        {
-            Debug.Log("Scene loaded using LoadSceneMode.single");
-            return;
-        }
-        if (scene != _transitionScene)
-        {
-            _inactiveNextScene = scene;
-        }
-        else _transitionScene = scene;
+        Debug.Log($"Waiting to pop next scenes!");
+        _transitionScene = transition;
+        _inactiveNextScene = nextScene;
     }
 
     private void Event_ActiveSceneChanged(Scene oldScene, Scene newScene)
     {
         Debug.Log($"Switching to next active scene: {newScene.name}");
         SceneManager.UnloadSceneAsync(oldScene);
-        PrepareNextScene();
+        StartCoroutine(PrepareNextScene());
     }
 }

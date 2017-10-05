@@ -39,6 +39,9 @@ public class GameController : MonoBehaviour
     private float _transitionTime;
     private float _gameTime;
 
+    [SerializeField]
+    private float _counter;
+
     public void StartGame()
     {
         TransitionTime = _transitionTime;
@@ -69,27 +72,27 @@ public class GameController : MonoBehaviour
             WasSuccessful = false;
             var sloader = SceneLoader.ActiveLoader;
             sloader.StartTransition();
-            var counter = 0f;
+            _counter = 0f;
 
             // wait for transition
             OnTransitionStart?.Invoke(this, EventArgs.Empty);
-            while (counter <= TransitionTime)
+            while (_counter <= TransitionTime)
             {
-                counter += Time.deltaTime;
-                OnTransitionTimerTick?.Invoke(counter, TransitionTime);
+                _counter += Time.deltaTime;
+                OnTransitionTimerTick?.Invoke(_counter, TransitionTime);
                 yield return null;
             }
             OnTransitionEnd?.Invoke(this, EventArgs.Empty);
 
-            counter = 0f;
+            _counter = 0f;
             sloader.ActivateNextScene();
 
             // wait for game timer
             OnGameStart?.Invoke(this, EventArgs.Empty);
-            while (counter <= GameTime)
+            while (_counter <= GameTime)
             {
-                counter += Time.deltaTime;
-                OnGameTimerTick?.Invoke(counter, GameTime);
+                _counter += Time.deltaTime;
+                OnGameTimerTick?.Invoke(_counter, GameTime);
                 yield return null;
             }
             TransitionTime = Mathf.Clamp(TransitionTime, MinimumTransitionTime, TransitionTime);
