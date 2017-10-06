@@ -86,6 +86,7 @@ public class GameController : MonoBehaviour
 
             _counter = 0f;
             sloader.ActivateNextScene();
+            StartCoroutine(sloader.PrepareNextScene());
 
             // wait for game timer
             OnGameStart?.Invoke(this, EventArgs.Empty);
