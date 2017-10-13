@@ -86,11 +86,6 @@ public class SceneLoader : MonoBehaviour
         StartCoroutine(PrepareNextScene());
     }
 
-    private void Event_SceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SceneManager.SetActiveScene(scene);
-    }
-
     /// <summary>
     /// loads the next scene and the coresponding transition scene in the background.
     /// </summary>
@@ -152,10 +147,20 @@ public class SceneLoader : MonoBehaviour
         }
     }
 
+    private void Event_SceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.SetActiveScene(scene);
+    }
+
     private void Event_SceneUnloaded(Scene scene)
     {
         Debug.Log($"Unloaded scene: {scene.name}");
         _lastScene = scene;
+    }
+
+    public void ReturnMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void Event_SceneReady(AsyncOperation transition, AsyncOperation nextScene)
