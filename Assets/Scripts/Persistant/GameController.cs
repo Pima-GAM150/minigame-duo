@@ -99,9 +99,9 @@ public class GameController : MonoBehaviour
             TransitionTime = Mathf.Clamp(TransitionTime, MinimumTransitionTime, TransitionTime);
             GameTime = Mathf.Clamp(GameTime, MinimumGameTime, GameTime);
             OnGameEnd?.Invoke(this, EventArgs.Empty);
-            SceneLoader.ActiveLoader.ReturnMainMenu();
         }
         while (WasSuccessful);
+        SceneLoader.ActiveLoader.ReturnMainMenu();
 
         // this means we failed.
     }
