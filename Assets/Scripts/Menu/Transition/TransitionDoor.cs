@@ -5,19 +5,6 @@ using UnityEngine;
 
 public class TransitionDoor : MonoBehaviour
 {
-    public enum DoorState
-    {
-        Open,
-        Closed
-    }
-    public enum DoorDirection
-    {
-        Left,
-        Right
-    }
-    public DoorState State;
-    public DoorDirection Direction;
-
     [Range(0, 1)]
     public float ClosedByPercentage = 0.1f;
     [Range(0, 1)]
@@ -25,7 +12,6 @@ public class TransitionDoor : MonoBehaviour
 
     private RectTransform _rectTransform => transform as RectTransform;
 
-    private Vector2 _dir = Vector2.left;
     private Vector2 _closedPos;
     private Vector2 _openPos;
 
@@ -33,17 +19,6 @@ public class TransitionDoor : MonoBehaviour
     {
         var gc = GameController.ActiveController;
         _closedPos = _rectTransform.anchoredPosition;
-        switch (Direction)
-        {
-            case DoorDirection.Left:
-                _dir = Vector2.left;
-                break;
-
-            case DoorDirection.Right:
-                _dir = Vector2.right;
-                break;
-        }
-        State = DoorState.Open;
 
         // set door to open as the default state.
         _openPos = Vector2.zero;

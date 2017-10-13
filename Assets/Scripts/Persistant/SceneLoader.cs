@@ -19,6 +19,7 @@ public class SceneLoader : MonoBehaviour
 
     public List<string> SceneNamesToIgnore;
     public string TransitionSceneName;
+    public string NextSceneName;
 
     private AsyncOperation _transitionScene;
     private AsyncOperation _inactiveNextScene;
@@ -95,7 +96,7 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     public IEnumerator PrepareNextScene()
     {
-        var nextSceneName = GetNextScene();
+        NextSceneName = GetNextScene();
 
         var transitionAsync = SceneManager.LoadSceneAsync(TransitionSceneName, LoadSceneMode.Additive);
         transitionAsync.allowSceneActivation = false;
@@ -104,13 +105,13 @@ public class SceneLoader : MonoBehaviour
             yield return null;
         } while (transitionAsync.progress < .89f); // magical number where scenes aren't fully loaded until they're active.
         Debug.Log($"Completed loading of: {TransitionSceneName}");
-        var nextSceneAsync = SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Additive);
+        var nextSceneAsync = SceneManager.LoadSceneAsync(NextSceneName, LoadSceneMode.Additive);
         nextSceneAsync.allowSceneActivation = false;
         do
         {
             yield return null;
         } while (nextSceneAsync.progress < .89f);
-        Debug.Log($"Completed loading of: {nextSceneName}");
+        Debug.Log($"Completed loading of: {NextSceneName}");
 
         // unity should get their shit together why is there even an "on scene loaded" event if its 100% identical to on scene active?
         OnSceneReady?.Invoke(transitionAsync, nextSceneAsync);
